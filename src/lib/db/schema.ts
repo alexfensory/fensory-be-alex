@@ -43,6 +43,8 @@ export const tenants = pgTable('tenants', {
   billingCycleStart: timestamp('billing_cycle_start'),
   onboardingStep: integer('onboarding_step').default(0),
   onboardingComplete: boolean('onboarding_complete').default(false),
+  websiteUrl: text('website_url'),
+  logoUrl: text('logo_url'),
   settings: jsonb('settings').$type<TenantSettings>(),
   createdAt: timestamp('created_at').defaultNow(),
   updatedAt: timestamp('updated_at').defaultNow()
@@ -106,9 +108,11 @@ export const brandVoiceProfiles = pgTable('brand_voice_profiles', {
   tenantId: uuid('tenant_id').references(() => tenants.id, { onDelete: 'cascade' }).unique().notNull(),
   toneDescriptors: jsonb('tone_descriptors').$type<string[]>(),
   vocabulary: jsonb('vocabulary').$type<VocabularySettings>(),
+  vocabularyPatterns: jsonb('vocabulary_patterns').$type<Record<string, string[]>>(),
   styleGuidelines: jsonb('style_guidelines').$type<StyleGuideline[]>(),
   exampleSnippets: jsonb('example_snippets').$type<string[]>(),
   doNotUse: jsonb('do_not_use').$type<string[]>(),
+  voiceSummary: text('voice_summary'),
   targetAudience: text('target_audience'),
   industryContext: text('industry_context'),
   generatedAt: timestamp('generated_at'),
@@ -135,6 +139,7 @@ export const topics = pgTable('topics', {
   tenantId: uuid('tenant_id').references(() => tenants.id, { onDelete: 'cascade' }).notNull(),
   lane: topicLaneEnum('lane').default('standard'),
   title: varchar('title', { length: 500 }).notNull(),
+  keyword: varchar('keyword', { length: 255 }),
   slug: varchar('slug', { length: 500 }),
   keywords: jsonb('keywords').$type<string[]>(),
   difficulty: integer('difficulty'),
@@ -143,6 +148,7 @@ export const topics = pgTable('topics', {
   status: topicStatusEnum('status').default('discovered'),
   pillarId: uuid('pillar_id').references((): typeof topics => topics.id),
   scheduledFor: timestamp('scheduled_for'),
+  briefTemplate: text('brief_template'),
   metadata: jsonb('metadata').$type<TopicMetadata>(),
   createdAt: timestamp('created_at').defaultNow()
 }, (table) => [
@@ -175,6 +181,8 @@ export const articles = pgTable('articles', {
   qualityScore: integer('quality_score'),
   humanizationScore: integer('humanization_score'),
   wordCount: integer('word_count'),
+  targetKeyword: varchar('target_keyword', { length: 255 }),
+  vertical: varchar('vertical', { length: 50 }),
   qualityGateResult: jsonb('quality_gate_result').$type<QualityGateResult>(),
   publishedAt: timestamp('published_at'),
   publishedUrl: text('published_url'),
@@ -331,6 +339,7 @@ export const performanceSnapshots = pgTable('performance_snapshots', {
   tenantId: uuid('tenant_id').references(() => tenants.id, { onDelete: 'cascade' }).notNull(),
   articleId: uuid('article_id').references(() => articles.id, { onDelete: 'set null' }),
   url: text('url').notNull(),
+  date: timestamp('date').notNull(),
   snapshotDate: date('snapshot_date').notNull(),
   clicks: integer('clicks'),
   impressions: integer('impressions'),
@@ -341,7 +350,8 @@ export const performanceSnapshots = pgTable('performance_snapshots', {
 }, (table) => [
   index('performance_snapshots_tenant_idx').on(table.tenantId),
   index('performance_snapshots_article_idx').on(table.articleId),
-  index('performance_snapshots_date_idx').on(table.snapshotDate)
+  index('performance_snapshots_date_idx').on(table.snapshotDate),
+  index('performance_snapshots_date_ts_idx').on(table.date)
 ])
 
 export type QueryData = {
