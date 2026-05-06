@@ -1,12 +1,16 @@
 import { WordPressConnector } from './connectors/wordpress'
 import { WebflowConnector } from './connectors/webflow'
 import { GhostConnector } from './connectors/ghost'
+import { NotionConnector } from './connectors/notion'
+import { HubSpotConnector } from './connectors/hubspot'
 import type { CMSConnector, CMSConnectorType } from './types'
 
 const connectors: Partial<Record<CMSConnectorType, CMSConnector>> = {
   wordpress: new WordPressConnector(),
   webflow: new WebflowConnector(),
-  ghost: new GhostConnector()
+  ghost: new GhostConnector(),
+  notion: new NotionConnector(),
+  hubspot: new HubSpotConnector()
 }
 
 export function getConnector(type: CMSConnectorType): CMSConnector {
