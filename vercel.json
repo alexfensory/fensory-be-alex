@@ -1,0 +1,20 @@
+{
+  "crons": [
+    {
+      "path": "/api/cron/performance-sync",
+      "schedule": "0 2 * * *"
+    },
+    {
+      "path": "/api/cron/indexing-checks",
+      "schedule": "0 */6 * * *"
+    },
+    {
+      "path": "/api/cron/usage-reset",
+      "schedule": "0 0 1 * *"
+    },
+    {
+      "path": "/api/cron/scheduled-publish",
+      "schedule": "0 * * * *"
+    }
+  ]
+}

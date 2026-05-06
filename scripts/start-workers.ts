@@ -2,12 +2,16 @@ import { articleWorker } from '../src/lib/workers/article-worker'
 import { crawlWorker } from '../src/lib/workers/crawl-worker'
 import { cmsWorker } from '../src/lib/workers/cms-worker'
 import { agentWorker } from '../src/lib/workers/agent-worker'
+import { indexingWorker } from '../src/lib/workers/indexing-worker'
+import { performanceWorker } from '../src/lib/workers/performance-worker'
 
 const workers = {
   article: articleWorker,
   crawl: crawlWorker,
   cms: cmsWorker,
-  agent: agentWorker
+  agent: agentWorker,
+  indexing: indexingWorker,
+  performance: performanceWorker
 }
 
 type WorkerName = keyof typeof workers
@@ -15,14 +19,19 @@ type WorkerName = keyof typeof workers
 const target = process.argv[2] as WorkerName | 'all' | undefined
 
 async function main() {
-  console.log('Starting Verba workers...')
+  console.log('========================================')
+  console.log('       Verba Background Workers')
+  console.log('========================================')
+  console.log('')
 
   if (!target || target === 'all') {
-    console.log('Starting all workers...')
-    console.log('- Article generation worker')
-    console.log('- Brand crawl worker')
-    console.log('- CMS publish worker')
-    console.log('- Agent dispatch worker')
+    console.log('Starting all workers:')
+    console.log('  - article     : Article generation')
+    console.log('  - crawl       : Brand website crawling')
+    console.log('  - cms         : CMS publishing')
+    console.log('  - agent       : Agent notifications')
+    console.log('  - indexing    : URL indexing checks')
+    console.log('  - performance : GSC performance sync')
   } else if (workers[target]) {
     console.log(`Starting ${target} worker only...`)
   } else {
@@ -31,21 +40,25 @@ async function main() {
     process.exit(1)
   }
 
-  console.log('\nWorkers are running. Press Ctrl+C to stop.\n')
+  console.log('')
+  console.log('Workers are running. Press Ctrl+C to stop.')
+  console.log('========================================')
 }
 
 // Graceful shutdown
 async function shutdown() {
-  console.log('\nShutting down workers...')
+  console.log('\n========================================')
+  console.log('Shutting down workers...')
 
   try {
     await Promise.all(
       Object.entries(workers).map(async ([name, worker]) => {
-        console.log(`Closing ${name} worker...`)
+        console.log(`  Closing ${name} worker...`)
         await worker.close()
       })
     )
     console.log('All workers stopped.')
+    console.log('========================================')
     process.exit(0)
   } catch (error) {
     console.error('Error during shutdown:', error)
